@@ -84,7 +84,7 @@ class UpdateBD():
             self.update(A, B, C, Name, Address)
 
     def search_ip_addr(self):
-        return 
+        return
 
 """if __name__=='__main__':
     u = UpdateBD()
