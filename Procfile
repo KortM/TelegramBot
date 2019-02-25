@@ -1,1 +1,1 @@
-web: Bot start
+web: python Bot.py 
