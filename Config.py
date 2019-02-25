@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 basedir =os.path.abspath(os.path.dirname(__file__))
-name = '/../BD.db'
+name = '/BD.db'
 engine = create_engine("sqlite:///"+basedir+name)
 print(basedir+name)
 Base = declarative_base()
