@@ -1,1 +1,1 @@
-web: python Bot.py
+work: python Bot.py
