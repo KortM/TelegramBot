@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-basedir =os.path.abspath(__name__)
+basedir =os.path.abspath(os.path.dirname(__file__))
 name = '/../BD.db'
 engine = create_engine("sqlite:///"+basedir+name)
 print(basedir+name)
