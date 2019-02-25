@@ -13,14 +13,27 @@ class UpdateBD():
         str = mac.split(':')
         if(len(str)<6):
             str = mac.split('.')
-            if(len(str) <3):
+            if(len(str) <6):
                 str = mac.split('-')
                 if(len(str)<6):
-                    return 'Неверный формат mac-адреса!'
+                    str = mac.split('.')
+                    if len(str) < 3:
+                        str = mac.split(' ')
+                        if len(str) <6:
+                            str = mac
+                            if len(str) < 12:
+                                return 'Неверный формат mac-адреса!'
+                            else:
+                                result = self.search(str[0:2], str[2:4], str[4:6], str[6:8], str[8:10], str[10:12])
+                        else:
+                            result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
+                    else:
+                        result = self.search(str[0][0:2], str[0][2:4], str[1][0:2], str[1][2:4], str[2][0:2],
+                                             str[2][2:4])
                 else:
                     result=self.search(str[0], str[1], str[2], str[3], str[4], str[5])
             else:
-                result=self.search(str[0][0:2], str[0][2:4], str[1][0:2], str[1][2:4], str[2][0:2], str[2][2:4])
+                result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
         else:
             result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
         return result
@@ -70,7 +83,8 @@ class UpdateBD():
             Address  = str(line['Organization Address'])
             self.update(A, B, C, Name, Address)
 
-
+    def search_ip_addr(self):
+        return 
 
 """if __name__=='__main__':
     u = UpdateBD()
