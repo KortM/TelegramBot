@@ -5,22 +5,17 @@ class UpdateBD():
         self.s = Session()
 
     def update(self, A,B,C,title, address):
-        #print(A+ B+C+D+E+F+title)
         m = Mac(A,B,C, title, address)
         self.s.add(m)
         self.s.commit()
-        print('Add')
     def splitStr(self, mac):
         mac = mac.upper()
         str = mac.split(':')
         if(len(str)<6):
-            print("Ветка А")
             str = mac.split('.')
             if(len(str) <3):
-                print("Ветка Б")
                 str = mac.split('-')
                 if(len(str)<6):
-                    print("Ветка С")
                     return 'Неверный формат mac-адреса!'
                 else:
                     result=self.search(str[0], str[1], str[2], str[3], str[4], str[5])

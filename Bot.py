@@ -12,7 +12,6 @@ class Bot():
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.INFO)
-        self.msg = ''
         self.u  = UpdateBD()
     def start(self, bot, update):
         text = "Привет! Начнем? Высылай мак-адрес "
