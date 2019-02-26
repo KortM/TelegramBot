@@ -20,7 +20,11 @@ class Bot():
         bot.send_message(chat_id=update.message.chat_id, text=text+rain+'\n'+m)
     def getMessage(self, bot, update):
         result =self.u.splitStr(update.message.text)
-        bot.send_message(chat_id=update.message.chat_id, text='<b style="color:blue;">'+"Mac-адрес: "+update.message.text+'\n'+result+"</b>", parse_mode='HTML')
+        if type(result)==tuple:
+            bot.send_message(chat_id=update.message.chat_id, text='<b style="color:blue;">'+result[1]+'\n'+result[0]+"</b>", parse_mode='HTML')
+        else:
+            bot.send_message(chat_id=update.message.chat_id, text='<b style="color:blue;">' + result + "</b>", parse_mode='HTML')
+
 
     #метод запуска бота
     def main(self):

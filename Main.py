@@ -1,5 +1,8 @@
+from urllib import request
+
 from Config import Session, Mac
 import csv
+import urllib3, json
 class UpdateBD():
     def __init__(self):
         self.s = Session()
@@ -8,35 +11,77 @@ class UpdateBD():
         m = Mac(A,B,C, title, address)
         self.s.add(m)
         self.s.commit()
-    def splitStr(self, mac):
-        mac = mac.upper()
+    def split_to_colon(self, mac):
         str = mac.split(':')
-        if(len(str)<6):
-            str = mac.split('.')
-            if(len(str) <6):
-                str = mac.split('-')
-                if(len(str)<6):
-                    str = mac.split('.')
-                    if len(str) < 3:
-                        str = mac.split(' ')
-                        if len(str) <6:
-                            str = mac
-                            if len(str) < 12:
-                                return 'Неверный формат mac-адреса!'
-                            else:
-                                result = self.search(str[0:2], str[2:4], str[4:6], str[6:8], str[8:10], str[10:12])
-                        else:
-                            result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
-                    else:
-                        result = self.search(str[0][0:2], str[0][2:4], str[1][0:2], str[1][2:4], str[2][0:2],
-                                             str[2][2:4])
-                else:
-                    result=self.search(str[0], str[1], str[2], str[3], str[4], str[5])
-            else:
-                result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
+        if len(str) < 6:
+            return False
         else:
             result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
-        return result
+            return result
+    def split_to_dash(self, mac):
+        str = mac.split('-')
+        if len(str) < 6:
+            return False
+        else:
+            result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
+            return result
+    def split_to_point(self, mac):
+        str = mac.split('.')
+        if len(str) < 3 or len(str) > 3:
+            return False
+        else:
+            result = self.search(str[0][0:2], str[0][2:4], str[1][0:2], str[1][2:4], str[2][0:2],
+                                 str[2][2:4])
+            return result
+    def split_to_space(self, mac):
+        str = mac.split(' ')
+        if len(str) < 6:
+            return False
+        else:
+            result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
+            return result
+    def split_mac(self,mac):
+        str = mac
+        if len(str)<12:
+            return False
+        else:
+            result = self.search(str[0:2], str[2:4], str[4:6], str[6:8], str[8:10], str[10:12])
+            return result
+    def splitStr(self, mac):
+        mac = mac.upper()
+        is_find = False
+        split= self.split_to_dash(mac)
+        if split:
+            return split, "MAC-адрес: "+mac
+        else:
+            is_find = False
+        split = self.split_to_colon(mac)
+        if split:
+            return split, "MAC-адрес: "+mac
+        else:
+            is_find = False
+        split = self.split_to_point(mac)
+        if split:
+            return split, "MAC-адрес: "+mac
+        else:
+            is_find = False
+        split = self.split_to_space(mac)
+        if split:
+            return split, "MAC-адрес: "+mac
+        else:
+            is_find = False
+        split = self.split_mac(mac)
+        if split:
+            return split, "MAC-адрес: "+mac
+        else:
+            is_find = False
+        if not is_find:
+            is_ip = self.search_ip_addr(mac.lower())
+            if is_ip:
+                return is_ip
+            else:
+                return 'Неверный формат MAC или IP -адреса!'
+
 
     def search(self, A,B,C,D,E,F):
         a = self.s.query(Mac).filter_by(A=str(A)).all()
@@ -66,7 +111,7 @@ class UpdateBD():
             count = 0
             list_count = list_count +1
         if len(result_index) <=0:
-            return "Mac не найден!"
+            return False
         else:
             #return str(result_index[0]).lstrip()+' Название организации: '+str(result_index[1]+' Адрес: '+str(result_index[2]))
             return 'Название организации: ' + str(
@@ -83,13 +128,35 @@ class UpdateBD():
             Address  = str(line['Organization Address'])
             self.update(A, B, C, Name, Address)
 
-    def search_ip_addr(self):
-        return
-
+    def search_ip_addr(self, ip):
+        try:
+            data = request.urlopen('http://ipinfo.io/{0}/json'.format(ip)).read().decode('utf8')
+            print(data)
+            if len(data) <=0:
+                return False
+            else:
+                ip_data = json.loads(data)
+                ip = ip_data['ip']
+                country = ip_data['country']
+                city = ip_data['city']
+                org = ip_data['org']
+                result = "IP-адрес: "+ip+'\n' + "Страна: "+ country+'\n'+"Город: "+city+'\n'+"Провайдер: "+ org
+                return result
+        except:
+            return False
 """if __name__=='__main__':
     u = UpdateBD()
     #u.load_in_csv()
     #u.load_data()
     #print(u.splitStr('ec08.6b17.3e2f'))
     #print(u.splitStr('00.1A.4B.00.00.00'))
-    #print(u.splitStr('D4:9E:6D:D0:02:01'))"""
+    print(u.splitStr('83.4.97.67'))
+    #print(u.splitStr('D4:9E:6D:D0:02:01'))
+
+    #print(u.splitStr('D4.9E.6D.D0.02.01'))
+    #print(u.splitStr('D49E.6DD0.0201'))
+    #print(u.splitStr('D4-9E-6D-D0-02-01'))
+    #print(u.splitStr('D4 9E 6D D0 02 01'))
+    #print(u.splitStr('D49E6DD00201'))
+    #print(u.search_ip_addr('5.144.97.67'))
+"""
