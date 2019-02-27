@@ -162,7 +162,7 @@ class UpdateBD():
                 address = results['nets'][0]['address']
 
             return("IP: "+query+'\n'+"Регистрационная служба: "+register+'\n'+ "CIDR: "+cidr+'\n'+"Диапозон: "+ range+'\n'
-              +"Дата назначения: "+ data+'\n'+"Провайдер: "+provider+'\n'+"Страна: "+country+'\n'+"Адрес: "+address)
+              +"Дата назначения: "+ data+'\n'+"Провайдер: "+provider+'\n'+"Страна: "+country+'\n'+"Адрес: "+str(address).rstrip())
         except:
             return False
 """if __name__=='__main__':
