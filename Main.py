@@ -3,6 +3,7 @@ from urllib import request
 from Config import Session, Mac
 import csv
 import urllib3, json
+from ipwhois import IPWhois
 class UpdateBD():
     def __init__(self):
         self.s = Session()
@@ -128,9 +129,9 @@ class UpdateBD():
             Address  = str(line['Organization Address'])
             self.update(A, B, C, Name, Address)
 
-    def search_ip_addr(self, ip):
+    """def search_ip_addr(self, ip):
         try:
-            data = request.urlopen('http://ipinfo.io/{0}/json'.format(ip)).read().decode('utf8')
+            data = request.urlopen('https://rest.db.ripe.net/geolocation?source=test&ipkey={0}'.format(ip)).read().decode('utf8')
             print(data)
             if len(data) <=0:
                 return False
@@ -143,6 +144,26 @@ class UpdateBD():
                 result = "IP-адрес: "+ip+'\n' + "Страна: "+ country+'\n'+"Город: "+city+'\n'+"Провайдер: "+ org
                 return result
         except:
+            return False"""
+    def search_ip_addr(self, ip):
+        try:
+            obj = IPWhois(ip)
+            results = obj.lookup_whois()
+            if len(results)<=0:
+                return False
+            else:
+                country = results['asn_country_code']
+                register = results['asn_registry']
+                cidr = results['nets'][0]['cidr']
+                range = results['nets'][0]['range']
+                data = results['asn_date']
+                provider = results['asn_description']
+                query = results['query']
+                address = results['nets'][0]['address']
+
+            return("IP: "+query+'\n'+"Регистрационная служба: "+register+'\n'+ "CIDR: "+cidr+'\n'+"Диапозон: "+ range+'\n'
+              +"Дата назначения: "+ data+'\n'+"Провайдер: "+provider+'\n'+"Страна: "+country+'\n'+"Адрес: "+address)
+        except:
             return False
 """if __name__=='__main__':
     u = UpdateBD()
@@ -150,7 +171,7 @@ class UpdateBD():
     #u.load_data()
     #print(u.splitStr('ec08.6b17.3e2f'))
     #print(u.splitStr('00.1A.4B.00.00.00'))
-    print(u.splitStr('83.4.97.67'))
+    #print(u.splitStr('83.4.97.67'))
     #print(u.splitStr('D4:9E:6D:D0:02:01'))
 
     #print(u.splitStr('D4.9E.6D.D0.02.01'))
@@ -160,3 +181,4 @@ class UpdateBD():
     #print(u.splitStr('D49E6DD00201'))
     #print(u.search_ip_addr('5.144.97.67'))
 """
+
