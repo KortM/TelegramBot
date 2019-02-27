@@ -29,5 +29,17 @@ class Mac(Base):
         self.address = address
     def __repr__(self):
         return("{0}:{1}:{2}".format(self.A, self.B, self.C))
+class Country(Base):
+    __tablename__ = 'Country'
+    id = Column(Integer, primary_key=True)
+    code = Column(String(2))
+    title = Column(String(20))
+
+    def __init__(self, code, title):
+        self.code = code
+        self.title = title
+
+    def __repr__(self):
+        return "{0}:{1}".format(self.code, self.title)
 
 Base.metadata.create_all(engine)

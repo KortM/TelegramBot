@@ -1,6 +1,6 @@
 from urllib import request
 
-from Config import Session, Mac
+from Config import Session, Mac, Country
 import csv
 import urllib3, json
 from ipwhois import IPWhois
@@ -8,8 +8,12 @@ class UpdateBD():
     def __init__(self):
         self.s = Session()
 
-    def update(self, A,B,C,title, address):
+    def update_MAC(self, A,B,C,title, address):
         m = Mac(A,B,C, title, address)
+        self.s.add(m)
+        self.s.commit()
+    def update_country_code(self, code, title):
+        m = Country(code = code, title= title)
         self.s.add(m)
         self.s.commit()
     def split_to_colon(self, mac):
@@ -119,15 +123,13 @@ class UpdateBD():
                 result_index[1] +'\n'+ 'Адрес: ' + str(result_index[2]))
 
     def load_in_csv(self):
-        f = open("macbd.csv")
+        f = open("country.csv")
         reader  = csv.DictReader(f)
         for line in reader:
-            A = str(line['Assignment'])[0:2]
-            B = str(line['Assignment'])[2:4]
-            C = str(line['Assignment'])[4:6]
-            Name = str(line['Organization Name'])
-            Address  = str(line['Organization Address'])
-            self.update(A, B, C, Name, Address)
+            code = line['id']
+            title = line['value']
+
+            self.update_country_code(code, title)
 
     """def search_ip_addr(self, ip):
         try:
@@ -149,10 +151,13 @@ class UpdateBD():
         try:
             obj = IPWhois(ip)
             results = obj.lookup_whois()
+
             if len(results)<=0:
                 return False
             else:
-                country = results['asn_country_code']
+                country_code = results['asn_country_code']
+                a = self.s.query(Country).filter_by(code=str(country_code)).first()
+                country = a.title
                 register = results['asn_registry']
                 cidr = results['nets'][0]['cidr']
                 range = results['nets'][0]['range']
@@ -161,11 +166,12 @@ class UpdateBD():
                 query = results['query']
                 address = results['nets'][0]['address']
 
-            return("IP: "+query+'\n'+"Регистрационная служба: "+register+'\n'+ "CIDR: "+cidr+'\n'+"Диапозон: "+ range+'\n'
-              +"Дата назначения: "+ data+'\n'+"Провайдер: "+provider+'\n'+"Страна: "+country+'\n'+"Адрес: "+str(address).rstrip())
+                return("IP: "+query+'\n'+"Регистрационная служба: "+register+'\n'+ "CIDR: "+cidr+'\n'+"Диапозон: "+ range+'\n'
+                +"Дата назначения: "+ data+'\n'+"Провайдер: "+provider+'\n'+"Страна: "+str(country)+'\n'+"Адрес: "+str(address).rstrip())
         except:
+
             return False
-"""if __name__=='__main__':
+if __name__=='__main__':
     u = UpdateBD()
     #u.load_in_csv()
     #u.load_data()
@@ -179,6 +185,6 @@ class UpdateBD():
     #print(u.splitStr('D4-9E-6D-D0-02-01'))
     #print(u.splitStr('D4 9E 6D D0 02 01'))
     #print(u.splitStr('D49E6DD00201'))
-    #print(u.search_ip_addr('5.144.97.67'))
-"""
+    print(u.search_ip_addr('5.144.97.67'))
+
 
