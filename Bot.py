@@ -18,6 +18,7 @@ class Bot():
         rain = '\U0001F609'
         m = "Внимание! Бета-тест!"
         bot.send_message(chat_id=update.message.chat_id, text=text+rain+'\n'+m)
+
     def getMessage(self, bot, update):
         result =self.u.splitStr(update.message.text)
         if type(result)==tuple:
