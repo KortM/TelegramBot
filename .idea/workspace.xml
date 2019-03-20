@@ -5,12 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b7c430d5-0e20-47c7-9b8d-9acdcc8a03cd" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BD.db" beforeDir="false" afterPath="$PROJECT_DIR$/BD.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BG.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/Bot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config.py" beforeDir="false" afterPath="$PROJECT_DIR$/Config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -29,8 +24,8 @@
       <file leaf-file-name="Main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="396">
-              <caret line="251" column="41" selection-start-line="251" selection-start-column="41" selection-end-line="251" selection-end-column="41" />
+            <state relative-caret-position="36">
+              <caret line="244" column="49" lean-forward="true" selection-start-line="244" selection-start-column="49" selection-end-line="244" selection-end-column="49" />
               <folding>
                 <element signature="e#0#27#0" expanded="true" />
               </folding>
@@ -226,15 +221,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="51" y="81" width="1081" height="999" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="13" side_tool="true" />
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32845894" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32845894" />
-      <window_info anchor="bottom" id="Terminal" order="11" weight="0.3295838" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32845894" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.3295838" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16281222" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="4" />
@@ -623,8 +617,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="251" column="41" selection-start-line="251" selection-start-column="41" selection-end-line="251" selection-end-column="41" />
+        <state relative-caret-position="36">
+          <caret line="244" column="49" lean-forward="true" selection-start-line="244" selection-start-column="49" selection-end-line="244" selection-end-column="49" />
           <folding>
             <element signature="e#0#27#0" expanded="true" />
           </folding>

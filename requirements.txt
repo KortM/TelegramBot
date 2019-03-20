@@ -1,4 +1,6 @@
 asn1crypto==0.24.0
+backoff==1.8.0
+beautifulsoup4==4.7.1
 certifi==2018.11.29
 cffi==1.12.0
 chardet==3.0.4
@@ -9,8 +11,11 @@ idna==2.8
 ipwhois==1.1.0
 pycparser==2.19
 pyTelegramBotAPI==3.6.6
+python-geoip==1.2
 python-telegram-bot==11.1.0
 requests==2.21.0
+simple-geoip==0.1.0
 six==1.12.0
+soupsieve==1.8
 SQLAlchemy==1.2.18
 urllib3==1.24.1
