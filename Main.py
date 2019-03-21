@@ -108,7 +108,7 @@ class UpdateBD():
                 if is_tel_number:
                     return "Номер: "+mac + '\n'+ is_tel_number
                 else:
-                    return 'Неверный формат MAC или IP -адреса!'
+                    return 'Ничего не найдено! Проверьте правильность ввода и попоробуйте еще. '
 
     def search(self, A, B, C, D, E, F):
         a = self.s.query(Mac).filter_by(A=str(A)).all()
@@ -202,9 +202,14 @@ class UpdateBD():
         if prefix == '+':
             p_out_number = number[1:]
             return str(self.find_code(p_out_number))
+        new_prefix = number[0:3]
+        if new_prefix == '810':
+            p_out_number = number[3:]
+            return "Номер: "+number+'\n'+str(self.find_code(p_out_number))
         if prefix == '8':
             p_out_number = number[1:]
             return str(self.find_operator_code(p_out_number))
+
 
 
     def find_code(self, p_out_number):
@@ -218,10 +223,7 @@ class UpdateBD():
             if n is not None:
                 result = n
             count = count + 1
-
-            # print('Code: ', n)
-            # print(i)
-        return result
+        return "Код: "+str(result.code)+'\n' + "Страна: "+str(result.country)
 
     def find_operator_code(self, number):
         count = 0
@@ -276,7 +278,7 @@ class UpdateBD():
 
 if __name__ == '__main__':
     u = UpdateBD()
-    #print(u.search_tel_number("+78124472309"))
+    print(u.search_tel_number("8108124472309"))
     # u.load_in_csv()
     # u.load_data()
     # print(u.splitStr('ec08.6b17.3e2f'))

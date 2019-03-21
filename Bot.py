@@ -14,7 +14,7 @@ class Bot():
                             level=logging.INFO)
         self.u  = UpdateBD()
     def start(self, bot, update):
-        text = "Привет! Начнем? Высылай мак-адрес "
+        text = ""
         rain = '\U0001F609'
         m = "Внимание! Бета-тест!"
         bot.send_message(chat_id=update.message.chat_id, text=text+rain+'\n'+m)
@@ -22,9 +22,9 @@ class Bot():
     def getMessage(self, bot, update):
         result =self.u.splitStr(update.message.text)
         if type(result)==tuple:
-            bot.send_message(chat_id=update.message.chat_id, text='<b style="color:blue;">'+result[1]+'\n'+result[0]+"</b>", parse_mode='HTML')
+            bot.send_message(chat_id=update.message.chat_id+1, text='<b style="color:blue;">'+result[1]+'\n'+result[0]+"</b>", parse_mode='HTML')
         else:
-            bot.send_message(chat_id=update.message.chat_id, text='<b style="color:blue;">' + result + "</b>", parse_mode='HTML')
+            bot.send_message(chat_id=update.message.chat_id+1, text='<b style="color:blue;">' + result + "</b>", parse_mode='HTML')
 
 
     #метод запуска бота
