@@ -24,7 +24,7 @@ class Bot():
         if type(result)==tuple:
             bot.send_message(chat_id=update.message.chat_id, text='<b style="color:blue;">'+result[1]+'\n'+result[0]+"</b>", parse_mode='HTML')
         else:
-            bot.send_message(chat_id=update.message.chat_id+1, text='<b style="color:blue;">' + result + "</b>", parse_mode='HTML')
+            bot.send_message(chat_id=update.message.chat_id, text='<b style="color:blue;">' + result + "</b>", parse_mode='HTML')
 
 
     #метод запуска бота
