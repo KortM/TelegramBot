@@ -205,7 +205,7 @@ class UpdateBD():
         new_prefix = number[0:3]
         if new_prefix == '810':
             p_out_number = number[3:]
-            return "Номер: "+number+'\n'+str(self.find_code(p_out_number))
+            return str(self.find_code(p_out_number))
         if prefix == '8':
             p_out_number = number[1:]
             return str(self.find_operator_code(p_out_number))
@@ -278,7 +278,7 @@ class UpdateBD():
 
 if __name__ == '__main__':
     u = UpdateBD()
-    print(u.search_tel_number("8108124472309"))
+    #print(u.search_tel_number("8108124472309"))
     # u.load_in_csv()
     # u.load_data()
     # print(u.splitStr('ec08.6b17.3e2f'))

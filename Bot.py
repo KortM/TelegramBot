@@ -22,9 +22,9 @@ class Bot():
     def getMessage(self, bot, update):
         result =self.u.splitStr(update.message.text)
         if type(result)==tuple:
-            bot.send_message(chat_id=update.message.chat_id, message_id=update.message.message_id+1, text='<b style="color:blue;">'+result[1]+'\n'+result[0]+"</b>", parse_mode='HTML')
+            bot.edit_message_text(chat_id=update.message.chat_id, message_id=update.message.message_id+1, text='<b style="color:blue;">'+result[1]+'\n'+result[0]+"</b>", parse_mode='HTML')
         else:
-            bot.send_message(chat_id=update.message.chat_id,message_id=update.message.message_id+1, text='<b style="color:blue;">' + result + "</b>", parse_mode='HTML')
+            bot.edit_message_text(chat_id=update.message.chat_id,message_id=update.message.message_id+1, text='<b style="color:blue;">' + result + "</b>", parse_mode='HTML')
 
 
     #метод запуска бота
