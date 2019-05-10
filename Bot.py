@@ -8,7 +8,7 @@ from Main import UpdateBD
 class Bot():
     #инициализация бота
     def __init__(self):
-        self.updater = Updater(token='657281480:AAF0-_QY450Nw6jXwdrj_JdFL_aYfZSO_Bw')
+        self.updater = Updater(token='token_key')
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.INFO)
