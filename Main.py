@@ -5,144 +5,9 @@ import urllib3, json
 from ipwhois import IPWhois
 
 
-class UpdateBD():
+class Worker():
     def __init__(self):
         self.s = Session()
-
-    def update_MAC(self, A, B, C, title, address):
-        m = Mac(A, B, C, title, address)
-        self.s.add(m)
-        self.s.commit()
-
-    def update_country_code(self, code, title):
-        m = Country(code=code, title=title)
-        self.s.add(m)
-        self.s.commit()
-
-    def update_telephone_number(self, code, start, end, cap, operator, region):
-        m = RussianNubmers(code=str(code), start_number=str(start), end_number=str(end), cap=str(cap),
-                           operator=str(operator), region=str(region))
-        self.s.add(m)
-        self.s.commit()
-
-    def update_tel_country_code(self, country, code):
-        m = CountryCode(country=str(country), code=int(code))
-        self.s.add(m)
-        self.s.commit()
-
-    def split_to_colon(self, mac):
-        str = mac.split(':')
-        if len(str) < 6:
-            return False
-        else:
-            result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
-            return result
-
-    def split_to_dash(self, mac):
-        str = mac.split('-')
-        if len(str) < 6:
-            return False
-        else:
-            result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
-            return result
-
-    def split_to_point(self, mac):
-        str = mac.split('.')
-        if len(str) < 3 or len(str) > 3:
-            return False
-        else:
-            result = self.search(str[0][0:2], str[0][2:4], str[1][0:2], str[1][2:4], str[2][0:2],
-                                 str[2][2:4])
-            return result
-
-    def split_to_space(self, mac):
-        str = mac.split(' ')
-        if len(str) < 6:
-            return False
-        else:
-            result = self.search(str[0], str[1], str[2], str[3], str[4], str[5])
-            return result
-
-    def split_mac(self, mac):
-        str = mac
-        if len(str) < 12:
-            return False
-        else:
-            result = self.search(str[0:2], str[2:4], str[4:6], str[6:8], str[8:10], str[10:12])
-            return result
-
-    def splitStr(self, mac):
-        mac = mac.upper()
-        is_find = False
-        split = self.split_to_dash(mac)
-        if split:
-            return split, "MAC-адрес: " + mac
-        else:
-            is_find = False
-        split = self.split_to_colon(mac)
-        if split:
-            return split, "MAC-адрес: " + mac
-        else:
-            is_find = False
-        split = self.split_to_point(mac)
-        if split:
-            return split, "MAC-адрес: " + mac
-        else:
-            is_find = False
-        split = self.split_to_space(mac)
-        if split:
-            return split, "MAC-адрес: " + mac
-        else:
-            is_find = False
-        split = self.split_mac(mac)
-        if split:
-            return split, "MAC-адрес: " + mac
-        else:
-            is_find = False
-        if not is_find:
-            is_ip = self.search_ip_addr(mac.lower())
-            if is_ip:
-                return is_ip
-            else:
-                is_tel_number = self.search_tel_number(mac)
-                if is_tel_number:
-                    return "Номер: "+mac + '\n'+ is_tel_number
-                else:
-                    return 'Ничего не найдено! Проверьте правильность ввода и попоробуйте еще. '
-
-    def search(self, A, B, C, D, E, F):
-        a = self.s.query(Mac).filter_by(A=str(A)).all()
-        count = 0
-        max_count = 0
-        list_count = 0
-        result_index = []
-        for i in a:
-            if str(B) in str(i)[3:5]:
-                count = count + 1
-                if C in str(i)[6:8]:
-                    count = count + 1
-                    if D in str(i)[9:11]:
-                        count = count + 1
-                        if E in str(i)[12:14]:
-                            count = count + 1
-                            if F in str(i)[15:17]:
-                                result_index.insert(0, i)
-                                result_index.insert(1, i.title)
-                                result_index.insert(2, i.address)
-            if count > 0:
-                if max_count < count:
-                    max_count = count
-                    result_index.insert(0, i)
-                    result_index.insert(1, i.title)
-                    result_index.insert(2, i.address)
-            count = 0
-            list_count = list_count + 1
-        if len(result_index) <= 0:
-            return False
-        else:
-            # return str(result_index[0]).lstrip()+' Название организации: '+str(result_index[1]+' Адрес: '+str(result_index[2]))
-            return 'Название организации: ' + str(
-                result_index[1] + '\n' + 'Адрес: ' + str(result_index[2]))
 
     def load_in_csv(self):
         f = open("Chapter_4.csv", encoding="cp1251")
@@ -174,27 +39,11 @@ class UpdateBD():
         try:
             obj = IPWhois(ip)
             results = obj.lookup_whois()
-
-            if len(results) <= 0:
-                return False
-            else:
-                country_code = results['asn_country_code']
-                a = self.s.query(Country).filter_by(code=str(country_code)).first()
-                country = a.title
-                register = results['asn_registry']
-                cidr = results['nets'][0]['cidr']
-                range = results['nets'][0]['range']
-                data = results['asn_date']
-                provider = results['asn_description']
-                query = results['query']
-                address = results['nets'][0]['address']
-
-                return (
-                            "IP: " + query + '\n' + "Регистрационная служба: " + register + '\n' + "CIDR: " + cidr + '\n' + "Диапозон: " + range + '\n'
-                            + "Дата назначения: " + data + '\n' + "Провайдер: " + provider + '\n' + "Страна: " + str(
-                        country) + '\n' + "Адрес: " + str(address).rstrip())
+            data = []
+            [data.append(f'{key}: {value}\n'.title()) for key, value in results['nets'][0].items()]
+            return ''.join(data)
         except:
-            return False
+            return 'Unfortunately, no information was found. You may have entered an incorrect ip address.'
 
     def search_tel_number(self, number):
         prefix = number[0:1]
@@ -277,7 +126,8 @@ class UpdateBD():
 
 
 if __name__ == '__main__':
-    u = UpdateBD()
+    u = Worker()
+    u.search_ip_addr('8.8.8.8')
     #print(u.search_tel_number("8108124472309"))
     # u.load_in_csv()
     # u.load_data()
