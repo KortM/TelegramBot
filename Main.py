@@ -3,7 +3,8 @@ from Config import Session, Mac, Country, RussianNubmers, CountryCode
 import csv, bs4
 import urllib3, json
 from ipwhois import IPWhois
-
+from IP import calc_ip
+import re
 
 class Worker():
     def __init__(self):
@@ -35,7 +36,7 @@ class Worker():
                 self.update_telephone_number(code, start_number, end, cap, operator, region)
             region = ''
 
-    def search_ip_addr(self, ip):
+    def search_ip_addr(self, ip:str) -> str:
         try:
             obj = IPWhois(ip)
             results = obj.lookup_whois()
@@ -44,6 +45,23 @@ class Worker():
             return ''.join(data)
         except:
             return 'Unfortunately, no information was found. You may have entered an incorrect ip address.'
+
+    def claculate_ip(self, ip:str)-> str:
+        res = calc_ip(ip)
+        if res:
+            tmp = [f'{k}:{v}\n'for k,v in res.items()]
+            return ''.join(tmp)
+        else:
+            return 'Failed to calculate the number of hosts. \n' \
+            'Please make sure that the ip address and prefix are entered correctly.'
+
+    def search_mac_info(self, value:str) -> str:
+        res = re.findall(r'[0-9a-fA-F]{2}(?:[:-][0-9a-fA-F]{2}){5}|(?:[0-9a-fA-F]{12})|(?:[0-9a-fA-F]{4}(?:[.:-][0-9a-fA-F]{4}){2})', value)
+        if res:
+            res = ''.join(re.split(r'[.:-]',res[0]))
+            
+        else: return 'Invalid Mac address!'
+
 
     def search_tel_number(self, number):
         prefix = number[0:1]
@@ -127,7 +145,14 @@ class Worker():
 
 if __name__ == '__main__':
     u = Worker()
-    u.search_ip_addr('8.8.8.8')
+    #u.search_ip_addr('8.8.8.8')
+    #print(u.claculate_ip('192.168.1.1/'))
+    u.search_mac_info('AA:BB:CC:AA:BB:CC')
+    u.search_mac_info('AA-BB-CC-AA-BB-CC')
+    u.search_mac_info('AABBCCAABBCC')
+    u.search_mac_info('AABB.CCAA.BBCC')
+    u.search_mac_info('AABB:CCAA:BBCC')
+    u.search_mac_info('dfghfghfg')
     #print(u.search_tel_number("8108124472309"))
     # u.load_in_csv()
     # u.load_data()

@@ -38,6 +38,12 @@ def menu_handler(message):
             bot.send_message(message.chat.id, "Enter the ip address:", reply_markup=keyboard)
             bot.register_next_step_handler(message, get_ip_info)
             register_next_step(message.chat.id, '\U0001F310 IP whois')
+        if message.text == '\U00002795 Calculate IP':
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            keyboard.add(types.KeyboardButton('\U000021A9 Back'), types.KeyboardButton('192.168.1.1/24'))
+            bot.send_message(message.chat.id, 'Enter the Ip address and prefix:', reply_markup=keyboard)
+            bot.register_next_step_handler(message, get_count_host)
+
         if message.text == 'Main menu':
             register_next_step(message.chat.id, 'Main menu')
             build_menu(message)         
@@ -58,5 +64,15 @@ def get_ip_info(request):
         bot.send_message(request.chat.id, res)
         message = bot.send_message(request.chat.id, "Enter the ip address:")
         bot.register_next_step_handler(message, get_ip_info)
+
+def get_count_host(request):
+    if request.text == '\U000021A9 Back':
+        build_menu(request)
+        register_next_step(request.chat.id, 'Main menu')
+        return
+    if request.text:
+        request = bot.send_message(request.chat.id, worker.claculate_ip(request.text))
+        bot.register_next_step_handler(request, get_count_host)
+        bot.send_message(request.chat.id, 'Enter the Ip address and prefix:')
 
 bot.polling(none_stop=True)
