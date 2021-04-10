@@ -1,78 +1,115 @@
+import requests
 import logging
+from enum import Enum
 import telebot
 from telebot import types
-from vedis_config import register_next_step, get_last_step
+from vedis_interface import set_step, get_last_step
 from Main import Worker
 
-bot = telebot.TeleBot('1405995555:AAF-3x1I3aVTbpPjWK92TFaV8JdTE9rZNFQ')
+bot = telebot.TeleBot('657281480:AAF0-_QY450Nw6jXwdrj_JdFL_aYfZSO_Bw')
 worker = Worker()
 
 @bot.message_handler(commands = ['start'])
 def start(message):
-    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    main_menu = types.KeyboardButton('Main menu')
-    keyboard.add(main_menu)
-    bot.send_message(message.chat.id, "HI, i'm network bot", reply_markup=keyboard)
-    register_next_step(message.chat.id, 'start')
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton('\U0001F6E0 Menu'))
+    bot.send_message(message.chat.id, "Hi, i'm network bot", reply_markup=keyboard)
 
-def build_menu(message):
-    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    ip_whois = types.KeyboardButton('\U0001F310 IP whois')
-    mac_info = types.KeyboardButton('\U00002699 MAC info')
-    phone = types.KeyboardButton('\U0001F4DE Telephony')
-    ip_calc = types.KeyboardButton('\U00002795 Calculate IP')
-    back_btn = types.KeyboardButton('\U000021A9 Back')
-    next_btn = types.KeyboardButton('\U000021AA Next')
-    keyboard.add(ip_whois, ip_calc)
-    keyboard.add(phone, mac_info)
-    keyboard.add(back_btn, next_btn)
-    bot.send_message(message.chat.id, 'Main menu', reply_markup=keyboard)
-    message = bot.send_message(message.chat.id, "Select the appropriate one")
+def build_main_menu(message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton('\U0001F5A5 IP INFO'), types.KeyboardButton('\U00002797 HOST COUNT'))
+    keyboard.add(types.KeyboardButton('\U0000260E TELEPHONY'), types.KeyboardButton('\U0001F4DF MAC INFO'))
+    keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+    bot.send_message(message.chat.id, 'Select one', reply_markup=keyboard)
 
-@bot.message_handler(func = lambda call: True)
-def menu_handler(message):
-    if message:
-        if message.text == '\U0001F310 IP whois':
-            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            keyboard.add(types.KeyboardButton('\U000021A9 Back'))
-            bot.send_message(message.chat.id, "Enter the ip address:", reply_markup=keyboard)
-            bot.register_next_step_handler(message, get_ip_info)
-            register_next_step(message.chat.id, '\U0001F310 IP whois')
-        if message.text == '\U00002795 Calculate IP':
-            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            keyboard.add(types.KeyboardButton('\U000021A9 Back'), types.KeyboardButton('192.168.1.1/24'))
-            bot.send_message(message.chat.id, 'Enter the Ip address and prefix:', reply_markup=keyboard)
-            bot.register_next_step_handler(message, get_count_host)
+def ip_info(message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton('\U00002B05 Back'))
 
-        if message.text == 'Main menu':
-            register_next_step(message.chat.id, 'Main menu')
-            build_menu(message)         
-        if message.text == '\U000021A9 Back':
-            if get_last_step(message.chat.id) == 'Main menu':
-                start(message)
-            if get_last_step(message.chat.id) == '\U0001F310 IP whois':
-                bot.register_next_step_handler(message, build_menu)
-                register_next_step(message.chat.id,'Main menu')
+    if message.text:
+        if message.text == '\U00002B05 Back':
+            build_main_menu(message)
+            return
+        bot.send_message(message.chat.id, worker.search_ip_addr(message.text))
+        bot.send_message(message.chat.id, 'Please input IP address:', reply_markup=keyboard)
+        bot.register_next_step_handler(message, ip_info)
+
+def get_count_host(message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+
+    if message.text:
+        if message.text == '\U00002B05 Back':
+            build_main_menu(message)
+            return
+        bot.send_message(message.chat.id, worker.get_ip(message.text))
+        bot.send_message(message.chat.id, 'Please input IP address and prefix:', reply_markup=keyboard)
+        bot.register_next_step_handler(message, get_count_host)
+
+def get_mac_info(message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+
+    if message.text:
+        if message.text == '\U00002B05 Back':
+            build_main_menu(message)
+            return
+        bot.send_message(message.chat.id, worker.handle_mac(message.text))
+        bot.send_message(message.chat.id, 'Please input mac address:', reply_markup=keyboard)
+        bot.register_next_step_handler(message, get_mac_info)
+
+def get_telephony_info(message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+
+    if message.text:
+        if message.text == '\U00002B05 Back':
+            build_main_menu(message)
+            return
         
-def get_ip_info(request):
-    if request.text == '\U000021A9 Back':
-        build_menu(request)
-        register_next_step(request.chat.id, 'Main menu')
-        return
-    if request.text:
-        res = worker.search_ip_addr(request.text)
-        bot.send_message(request.chat.id, res)
-        message = bot.send_message(request.chat.id, "Enter the ip address:")
-        bot.register_next_step_handler(message, get_ip_info)
+        result = worker.handle_telephone(message.text)
+        print(result)
+        if result and len(result) == 2:
+            bot.send_photo(message.chat.id, result[1], result[0])
+            bot.send_message(message.chat.id, 'Please input telephone number:', reply_markup=keyboard)
+            bot.register_next_step_handler(message, get_telephony_info)
+        else:
+            bot.send_message(message.chat.id, worker.handle_telephone(message.text))
+            bot.send_message(message.chat.id, 'Please input telephone number:', reply_markup=keyboard)
+            bot.register_next_step_handler(message, get_telephony_info)
 
-def get_count_host(request):
-    if request.text == '\U000021A9 Back':
-        build_menu(request)
-        register_next_step(request.chat.id, 'Main menu')
-        return
-    if request.text:
-        request = bot.send_message(request.chat.id, worker.claculate_ip(request.text))
-        bot.register_next_step_handler(request, get_count_host)
-        bot.send_message(request.chat.id, 'Enter the Ip address and prefix:')
+@bot.message_handler(func=lambda call: True)
+def message_handler(message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    
+    if message.text == '\U0001F6E0 Menu':
+        keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+        build_main_menu(message)
+        set_step(message.chat.id,'Main menu')
 
-bot.polling(none_stop=True)
+    if message.text == '\U0001F5A5 IP INFO':
+        keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+        bot.send_message(message.chat.id, 'Please input IP address', reply_markup=keyboard)
+        bot.register_next_step_handler(message, ip_info)
+
+    if message.text == '\U00002797 HOST COUNT':
+        keyboard.add(types.KeyboardButton('\U00002B05 Back'), types.KeyboardButton('192.168.1.1/30'))
+        bot.send_message(message.chat.id, 'Please input IP address and prefix', reply_markup=keyboard)
+        bot.register_next_step_handler(message, get_count_host)
+
+    if message.text == '\U0001F4DF MAC INFO':
+        keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+        bot.send_message(message.chat.id, 'Please input mac address:', reply_markup=keyboard)
+        bot.register_next_step_handler(message, get_mac_info)
+
+    if message.text == '\U0000260E TELEPHONY':
+        keyboard.add(types.KeyboardButton('\U00002B05 Back'))
+        bot.send_message(message.chat.id, 'Please input telephone number:', reply_markup=keyboard)
+        bot.register_next_step_handler(message, get_telephony_info)
+
+    if message.text == '\U00002B05 Back':
+        if str(get_last_step(message.chat.id)) == 'Main menu':
+            start(message)
+
+if __name__ == '__main__':
+    bot.polling(none_stop=True)

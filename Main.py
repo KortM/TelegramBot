@@ -1,159 +1,150 @@
-from urllib import request
-from Config import Session, Mac, Country, RussianNubmers, CountryCode
-import csv, bs4
-import urllib3, json
 from ipwhois import IPWhois
-from IP import calc_ip
+from IP import IP_interface
+from Telephony import Telephony_Interface
+from Ports import get_port
+import schedule
+import time
+import threading
 import re
+
 
 class Worker():
     def __init__(self):
-        self.s = Session()
+        self.ip = IP_interface()
+        self.telephony = Telephony_Interface()
+        self.start_upgrade_controll()
 
-    def load_in_csv(self):
-        f = open("Chapter_4.csv", encoding="cp1251")
-        reader = csv.DictReader(f, "cp1251")
-        code = ''
-        start_number = ''
-        end = ''
-        cap = ''
-        operator = ''
-        region = ''
-        for line in reader:
-            try:
-                sp = line["c"]
-                split_line = str(sp).split(';')
-                print(split_line)
-                code = split_line[0]
-                start_number = split_line[1]
-                end = split_line[2]
-                cap = split_line[3]
-                operator = split_line[4]
-                region = split_line[5]
-                self.update_telephone_number(code, start_number, end, cap, operator, region)
-            except:
-                region = ''
-                self.update_telephone_number(code, start_number, end, cap, operator, region)
-            region = ''
-
-    def search_ip_addr(self, ip:str) -> str:
+    def search_ip_addr(self, ip):
         try:
             obj = IPWhois(ip)
             results = obj.lookup_whois()
-            data = []
-            [data.append(f'{key}: {value}\n'.title()) for key, value in results['nets'][0].items()]
-            return ''.join(data)
+            if results:
+                return ''.join([f'{k}: {v}\n'.title() for k, v in results['nets'][0].items()])
         except:
-            return 'Unfortunately, no information was found. You may have entered an incorrect ip address.'
+            return 'No information was found for your request. Change the request and try again!'
 
-    def claculate_ip(self, ip:str)-> str:
-        res = calc_ip(ip)
-        if res:
-            tmp = [f'{k}:{v}\n'for k,v in res.items()]
-            return ''.join(tmp)
-        else:
-            return 'Failed to calculate the number of hosts. \n' \
-            'Please make sure that the ip address and prefix are entered correctly.'
-
-    def search_mac_info(self, value:str) -> str:
-        res = re.findall(r'[0-9a-fA-F]{2}(?:[:-][0-9a-fA-F]{2}){5}|(?:[0-9a-fA-F]{12})|(?:[0-9a-fA-F]{4}(?:[.:-][0-9a-fA-F]{4}){2})', value)
-        if res:
-            res = ''.join(re.split(r'[.:-]',res[0]))
+    def handle_telephone(self, number: str):
+        complete_searching = ''
+        tmp = re.findall(r'(?:\+|\d)[\d\-\(\) ]{10,}', number)
+        if tmp:
+            tmp = re.split(r'[\-\(\)]', tmp[0])
+            if len(tmp) == 1:
+                if tmp[0][:2] != '+7':
+                    complete_searching = self.telephony.find_international_number(tmp[0][1:])
+                if tmp[0][:2] == '+7':
+                    complete_searching = self.telephony.get_telephony_info(
+                        tmp[0][2:5], int(tmp[0][5:]))
+                if tmp[0][:1] == '8':
+                    found = self.telephony.get_telephony_info(
+                        tmp[0][1:4], int(tmp[0][4:]))
+                    complete_searching = found if found else self.telephony.find_international_number(
+                        tmp[0][1:])
+                if tmp[0][:3] == '810':
+                    complete_searching = self.telephony.find_international_number(
+                        tmp[0][3:])
+                if tmp[0][:4] == '+810':
+                    complete_searching = self.telephony.find_international_number(
+                        tmp[0][4:])
             
-        else: return 'Invalid Mac address!'
+            if len(tmp) == 3:
+                complete_searching = self.telephony.get_telephony_info(
+                    tmp[1], int(tmp[2]))
+            if len(tmp) == 6:
+                complete_searching = self.telephony.get_telephony_info(
+                    tmp[1], int(''.join(tmp[3:])))
+            if len(tmp) == 7:
+                complete_searching = self.telephony.get_telephony_info(
+                    tmp[2], int(''.join(tmp[4:])))
+        
+        print(complete_searching)
+        tmp = re.findall(r'(?:\+|\d){7,}', number)
+        if tmp and not complete_searching:
+            complete_searching =self.telephony.get_telephony_info('812', int(tmp[0]))
+            
+        return complete_searching if complete_searching else 'No information was found for your request. Change the request and try again!'
 
-
-    def search_tel_number(self, number):
-        prefix = number[0:1]
-        p_out_number = ''
-        if prefix == '+':
-            p_out_number = number[1:]
-            return str(self.find_code(p_out_number))
-        new_prefix = number[0:3]
-        if new_prefix == '810':
-            p_out_number = number[3:]
-            return str(self.find_code(p_out_number))
-        if prefix == '8':
-            p_out_number = number[1:]
-            return str(self.find_operator_code(p_out_number))
-
-
-
-    def find_code(self, p_out_number):
-        count = 0
-        result = ''
-        while count <= len(p_out_number):
-            i = p_out_number[:count]
-            if i == str(7):
-                return self.find_operator_code(p_out_number[count:])
-            n = self.s.query(CountryCode).filter_by(code=i).first()
-            if n is not None:
-                result = n
-            count = count + 1
-        return "Код: "+str(result.code)+'\n' + "Страна: "+str(result.country)
-
-    def find_operator_code(self, number):
-        count = 0
-        find_count = 0
-        code = ''
-        start_number = ''
-        end_number = ''
-        cap = ''
-        operator = ''
-        region = ''
-        country = "Россия"
-        while count <= 3:
-            i = number[:count]
-            n = self.s.query(RussianNubmers).filter_by(code=str(i)).all()
-            if n is not None:
-                for a in n:
-                    start = number[count:]
-                    if int(start) >= a.start_number and int(start) <= a.end_number:
-                        code = a.code
-                        start_number = a.start_number
-                        end_number = a.end_number
-                        cap = a.cap
-                        operator = a.operator
-                        region = a.region
-                        find_count = find_count + 1
-            count = count + 1
-        if find_count <1:
-            return "Ничего не найдено =( "
+    def get_ip(self, ip) -> str:
+        """Метод форматирующий и возвращающий ip """
+        result = self.ip.calc_ip(ip)
+        format_result = ""
+        if result:
+            for k, v in result.items():
+                format_result = format_result + k+": "+v + '\n'
+            return format_result
         else:
-            return "Код оператора: "+ str(code) +'\n' + "Начало диапозона: "+str(start_number) + '\n' + "Конец диапозона: "+str(end_number)\
-        +'\n'+"Емкость: "+str(cap)+'\n'+"Оператор: "+str(operator)+'\n'+"Регион: "+str(region)+'\n'+"Страна: "+country
+            return 'No information was found for your request. Change the request and try again!'
 
-    """def search_tel_number(self, line):
-        print("Телефон", line)
-        result = request.urlopen("http://ostranah.ru/_lists/phone_codes.php")
-        b = bs4.BeautifulSoup(result, "html.parser")
-        f = open('code_country.csv', 'w')
-        writer = csv.writer(f)
-        list_code = []
+    def get_port(self, port):
+        result = get_port(port)
+        if result:
+            return result
+        else:
+            return None
 
-        for row in b.findAll('table')[0].tbody.findAll('tr'):
-            first_column = row.findAll('a')[0].contents
-            third_column = row.findAll('td')[1].contents
-            self.update_tel_country_code(str(first_column)[2:len(first_column)-3], int(str(third_column)[3:len(third_column)-3]))
-            #local_list = [str(first_column)[2:len(first_column)-3], str(third_column)[3:len(third_column)-3]]
-            #print(local_list)
-            #list_code.append(local_list)
-        #for row in list_code:
-        #    writer.writerow(row)
-"""
+    def handle_mac(self, value):
+        res = re.findall(
+            r'[0-9a-fA-F]{2}(?:[.:-][0-9a-fA-F]{2}){5}|[0-9a-fA-F]{12}|[0-9a-fA-F]{4}(?:[.:-][0-9a-fA-F]{4}){2}', value)
+        print(res)
+        if res:
+            print(self.ip.get_mac(''.join(re.split(r'[.:-]', res[0])).upper()[:6]))
+            result = self.ip.get_mac(''.join(re.split(r'[.:-]', res[0])).upper()[:6])
+            if result:
+                return result
+            else: return 'No information was found for your request. Change the request and try again!'
+        else:
+            return 'No information was found for your request. Change the request and try again!'
 
+    def start_upgrade_controll(self):
+        thread = threading.Thread(target=self.auto_upgrade, args=())
+        thread.start()
+        new_thread = threading.Thread(target=self.upgrade_task, args=())
+        new_thread.start()
+        
+    def upgrade_task(self):
+        try:
+            self.telephony.update_internation_numbers()
+            self.telephony.update_country()
+            self.ip.update_mac_data()
+        except Exception:
+            print('Failed update mac-data. Try later')
+        try:
+            self.telephony.update_tel_db()
+            
+        except Exception:
+            print('Failed update telephony data. Try later.')
+        
+        print('Update complete')
+    
+    def auto_upgrade(self):
+        schedule.every().saturday.at('00:00').do(self.upgrade_task)
+        print('Task is config')
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
 if __name__ == '__main__':
     u = Worker()
-    #u.search_ip_addr('8.8.8.8')
-    #print(u.claculate_ip('192.168.1.1/'))
-    u.search_mac_info('AA:BB:CC:AA:BB:CC')
-    u.search_mac_info('AA-BB-CC-AA-BB-CC')
-    u.search_mac_info('AABBCCAABBCC')
-    u.search_mac_info('AABB.CCAA.BBCC')
-    u.search_mac_info('AABB:CCAA:BBCC')
-    u.search_mac_info('dfghfghfg')
-    #print(u.search_tel_number("8108124472309"))
+    '''u.handle_telephone('+79506628028')
+    print(u.handle_telephone('88127407070'))
+    print(u.handle_telephone('89506628028'))
+    print(u.handle_telephone('+7(950)6628028'))
+    print(u.handle_telephone('+7 (950) 6628028'))
+    print(u.handle_telephone('+7-(950)-662-80-28'))
+    print(u.handle_telephone('+7(950)-662-80-28'))
+    print(u.handle_telephone('810333221112123'))
+    print(u.handle_telephone('+810333221112123'))'''
+    #print(u.handle_telephone('7407070'))
+    #print(u.handle_telephone('740-70-70'))
+    print(u.handle_telephone('88127407070'))
+
+    # u.search_tel_number()
+    # print(u.get_ip('192.167.1.1/30'))
+    # print(u.search_ip_addr('81.23.23.1'))
+    # print(u.handle_mac('ec086b173e2f'))
+    # print(u.handle_mac('ec08.6b17.3e2f'))
+    print(u.handle_mac('ec:08:6b:17:3e:2f'))
+    # print(u.handle_mac('ec-08-6b-17-3e-2f'))
+    # print(u.search_tel_number("8108124472309"))
     # u.load_in_csv()
     # u.load_data()
     # print(u.splitStr('ec08.6b17.3e2f'))

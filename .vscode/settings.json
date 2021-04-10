@@ -1,5 +1,3 @@
 {
-    "python.pythonPath": "/home/kort/Документы/CodeProjects/TelegramBot/venv/bin/python3",
-    "git.ignoreLimitWarning": true,
-    "python.formatting.provider": "autopep8"
+    "python.pythonPath": "/home/kort/Документы/CodeProjects/TelegramBot/venv/bin/python3"
 }
