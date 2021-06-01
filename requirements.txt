@@ -18,4 +18,4 @@ simple-geoip==0.1.0
 six==1.12.0
 soupsieve==1.8
 SQLAlchemy==1.2.18
-urllib3==1.24.1
+urllib3==1.26.5
