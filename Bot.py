@@ -4,7 +4,7 @@ from telebot import types
 from vedis_config import register_next_step, get_last_step
 from Main import Worker
 
-bot = telebot.TeleBot('1405995555:AAF-3x1I3aVTbpPjWK92TFaV8JdTE9rZNFQ')
+bot = telebot.TeleBot('')
 worker = Worker()
 
 @bot.message_handler(commands = ['start'])
