@@ -6,7 +6,7 @@ from telebot import types
 from vedis_interface import set_step, get_last_step
 from Main import Worker
 
-bot = telebot.TeleBot('657281480:AAF0-_QY450Nw6jXwdrj_JdFL_aYfZSO_Bw')
+bot = telebot.TeleBot('YOUR TOKEN')
 worker = Worker()
 
 @bot.message_handler(commands = ['start'])
